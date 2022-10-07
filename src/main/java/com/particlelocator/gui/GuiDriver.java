@@ -1,16 +1,19 @@
 package com.particlelocator.gui;
 
+import com.particlelocator.gui.controllers.ParticleLocatorController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class GuiDriver extends Application {
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) throws IOException, URISyntaxException {
         FXMLLoader fxmlLoader = new FXMLLoader(GuiDriver.class.getResource("particle-locator-gui.fxml"));
+        fxmlLoader.setController(new ParticleLocatorController());
         Scene scene = new Scene(fxmlLoader.load());
         stage.setScene(scene);
         stage.show();
