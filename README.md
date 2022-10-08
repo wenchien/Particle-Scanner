@@ -30,7 +30,7 @@
 ## About The Project
 
 <div align="center">
-    <img src="https://github.com/wenchien/Particle-Locator/blob/master/images/example_1.PNG" alt="Logo" width="80" height="80">
+    <img src="https://github.com/wenchien/Particle-Locator/blob/master/images/example_1.PNG">
 </div>
 
 There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
