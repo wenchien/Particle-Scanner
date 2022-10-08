@@ -14,9 +14,9 @@ public class GuiDriver extends Application {
     public void start(Stage stage) throws IOException, URISyntaxException {
         FXMLLoader fxmlLoader = new FXMLLoader(GuiDriver.class.getResource("particle-locator-gui.fxml"));
         fxmlLoader.setController(new ParticleLocatorController());
-        Scene scene = new Scene(fxmlLoader.load());
-        stage.setScene(scene);
-        stage.show();
+        Stage pcfStage = fxmlLoader.load();
+        pcfStage.getScene().getStylesheets().add(GuiDriver.class.getResource("css/dark-theme.css").toString());
+        pcfStage.show();
     }
 
     public static void main(String[] args) {

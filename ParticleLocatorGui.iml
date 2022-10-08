@@ -7,21 +7,26 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-controls:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-controls:win:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:win:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-base:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-base:win:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-fxml:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.openjfx:javafx-fxml:win:17.0.0.1" level="project" />
-    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:11.1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.dlsc.formsfx:formsfx-core:11.3.2" level="project" />
-    <orderEntry type="library" name="Maven: org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-controls:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-controls:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-graphics:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-base:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-base:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-fxml:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-fxml:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-swing:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-swing:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-web:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-web:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-media:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.openjfx:javafx-media:win:19-ea+8" level="project" />
+    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:11.1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-api:5.7.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apiguardian:apiguardian-api:1.1.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.opentest4j:opentest4j:1.2.0" level="project" />

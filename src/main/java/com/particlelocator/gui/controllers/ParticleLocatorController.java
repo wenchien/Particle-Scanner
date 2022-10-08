@@ -30,7 +30,7 @@ public class ParticleLocatorController {
 
     private ObservableList<String> gameinfoPathList = FXCollections.observableArrayList();
 
-    private Path dmxConverter = Path.of(this.getClass().getResource("/dmxconvertutil/dmxconvert.exe").toURI());
+    private Path dmxConverter;
 
     @FXML
     private CheckBox autoMoveCheckbox;
@@ -45,7 +45,7 @@ public class ParticleLocatorController {
     private Button gameInfoBrowse;
 
     @FXML
-    private ListView<?> gameInfoListView;
+    private ListView<String> gameInfoListView;
 
     @FXML
     private TextField gameInfoTextField;
@@ -54,7 +54,7 @@ public class ParticleLocatorController {
     private CheckBox generatePcfManifest;
 
     @FXML
-    private ListView<?> materialListView;
+    private ListView<String> materialListView;
 
     @FXML
     private Button pcfBrowse;
@@ -75,11 +75,15 @@ public class ParticleLocatorController {
     private TextField mapVersionTextField;
 
     public ParticleLocatorController() throws URISyntaxException {
+        dmxConverter = Path.of(this.getClass().getResource("/dmxconvertutil/dmxconvert.exe").toURI());
     }
 
     @FXML
     private void initialize() {
         progressBar.setProgress(0);
+        gameInfoListView.setItems(gameinfoPathList);
+        materialListView.setItems(pcfMaterialsList);
+
         // run every "initFunc" methods to add extra functionality to each Javafx component for this class
         List.of(this.getClass().getDeclaredMethods()).stream().forEach(m -> {
             if (m.getName().startsWith("initFunc")) {
@@ -154,6 +158,9 @@ public class ParticleLocatorController {
         // LOGGER.info("Initializing Application Console menu");
         pcfBrowse.setOnAction(e -> {
             File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(pcfBrowse, pcfTextField, new FileChooser.ExtensionFilter("PCF Files", "*.pcf"));
+            if(null == selectedFile) {
+                return;
+            }
             if (selectedFile.exists()) {
                 // Populate
                 pcfMaterialsList.clear();
@@ -178,6 +185,9 @@ public class ParticleLocatorController {
         // LOGGER.info("Initializing Application Console menu");
         gameInfoBrowse.setOnAction(e -> {
             File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(gameInfoBrowse, gameInfoTextField, new FileChooser.ExtensionFilter("TXT Files", "*.txt"));
+            if(null == selectedFile) {
+                return;
+            }
             gameinfoPathList.clear();
             gameinfoPathList.addAll(populateListOfGamePath(selectedFile));
         });
