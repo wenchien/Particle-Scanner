@@ -8,11 +8,31 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UnitTester {
+
+    @Test
+    public void testParseVmt() throws IOException {
+        File file = new File("D:\\Steam\\steamapps\\common\\Alien Swarm\\swarm\\materials\\particle\\particle_glow_06.vmt");
+        Path vmtPath = Path.of(file.toURI());
+        try (Stream<String> vmtLines = Files.lines(vmtPath)) {
+            Set<String> vmts = vmtLines
+                    .filter(s -> s.contains("$basetexture"))
+                    .map(s -> s.replaceAll("\t", "")
+                            .replaceAll("\s", "")
+                            .replace("$basetexture", "")
+                            .replaceAll("\"", "")
+                            .toLowerCase())
+                    .collect(Collectors.toSet());
+            System.out.println(vmts);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
 
     @Test

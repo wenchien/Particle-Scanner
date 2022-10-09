@@ -13,12 +13,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -114,23 +113,32 @@ public class ParticleLocatorController {
                             String customPorjectFolderStr = customProjectFolderTextField.getText();
                             // check if material already exists in the projectFolder path
                             if (new File(customPorjectFolderStr + materialPathStr).exists()) {
+                                // assuming vtfs already exists
                                 continue;
                             } else {
-                                // then check if material can be found anywhere in the game search path
+                                // then check if material's vmt AND vtf can be found anywhere in the game search path
                                 boolean isFound = false;
                                 for (String gameInfoSearchPath : gameinfoPathList) {
-                                    File searchFile = new File(rootFolder + "\\" + gameInfoSearchPath + "\\" + materialPathStr);
-                                    if (searchFile.exists()) {
+                                    String searchPathStr = rootFolder + "\\" + gameInfoSearchPath + "\\materials\\";
+                                    File searchFile = new File(searchPathStr + materialPathStr);
+                                    List<String> vtfTexturesLists = parseVmtForVtf(searchFile);
+                                    File searchVtfFile = new File(searchPathStr + vtfTexturesLists.get(0));
+                                    if (searchFile.exists() && searchVtfFile.exists()) {
                                         // move it under project folder
                                         isFound = true;
-                                        File searchFileDestination = new File(customPorjectFolderStr + "\\" + materialPathStr);
+                                        File searchFileDestination = new File(customPorjectFolderStr + "\\materials\\" + materialPathStr);
+                                        File searchVtfFileDestination = new File(customPorjectFolderStr + "\\materials\\" + vtfTexturesLists.get(0));
+
+                                        // Copy .vmt and .vtf to custom project folder
                                         Files.copy(searchFile.toPath(), searchFileDestination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                        Files.copy(searchVtfFile.toPath(), searchFileDestination.toPath(), StandardCopyOption.REPLACE_EXISTING);
                                         break;
                                     }
                                 }
 
                                 if (!isFound) {
                                     // report back as not found
+                                    System.out.println(materialPathStr + " : not found");
                                 }
                             }
 
@@ -149,7 +157,7 @@ public class ParticleLocatorController {
 
     private int executeDmxConverter(File sourceFile) throws URISyntaxException, IOException, InterruptedException {
         String commandLine = String.format("%s -i %s -ie binary -o %s -of tex", dmxConverter.toFile().getAbsolutePath(),
-                            "\"" + sourceFile.getAbsolutePath() + "\"", "\"converted.dmx\""); // output to temp file
+                            "\"" + sourceFile.getAbsolutePath() + "\"", "\"converted.dmx\"");
         Process process = Runtime.getRuntime().exec(commandLine);
         return process.waitFor();
     }
@@ -167,7 +175,7 @@ public class ParticleLocatorController {
 
                 try {
                     int returnCode = executeDmxConverter(selectedFile);
-                    Set<String> materialsPathSets = parseDmxForMaterial(new File(selectedFile.getPath() + "\\converted.dmx"));
+                    Set<String> materialsPathSets = parseDmxForMaterial(new File(selectedFile.getPath() + ".dmx"));
                     pcfMaterialsList.addAll(materialsPathSets);
                 } catch (URISyntaxException ex) {
                     ex.printStackTrace();
@@ -200,17 +208,32 @@ public class ParticleLocatorController {
         });
     }
 
+    private List<String> parseVmtForVtf(File file) throws IOException {
+        List<Function<String, String>> mapper = new ArrayList<>();
+        mapper.add(s -> s.replaceAll("\t", ""));
+        mapper.add(s -> s.replaceAll("\s", ""));
+        mapper.add(s -> s.replace("$basetexture", ""));
+        mapper.add(s -> s.replaceAll("\"", ""));
+        mapper.add(String::toLowerCase);
 
-    private Set<String> parseDmxForMaterial(File file) {
-        Set<String> materialsPathSets = Collections.emptySet();
-        Path dmxFilePath = Paths.get(file.getAbsolutePath());
-        try (Stream<String> dmxLines = Files.lines(dmxFilePath)) {
-            materialsPathSets = dmxLines.filter(s -> s.contains("material"))
-                    .map(s -> s.replaceAll("\t", "")
-                            .replace("\"material\" \"string\"", "").trim())
-                    .collect(Collectors.toSet());
-        } catch(Exception ex) {
-            ex.printStackTrace();
+        List<String> materialsVtfSets = new ArrayList<>((Collection<? extends String>) parseLinesToSet(file, s -> s.contains("$basetexture"), mapper, List.class));
+        if (materialsVtfSets.isEmpty()) {
+            throw new IOException("Cannot find any VTF given the VMT list");
+        }
+        return materialsVtfSets;
+    }
+
+
+    private Set<String> parseDmxForMaterial(File file) throws IOException {
+
+        List<Function<String, String>> mapper = new ArrayList<>();
+        mapper.add(s -> s.replaceAll("\t", ""));
+        mapper.add(s -> s.replaceAll("\"material\" \"string\"", "").trim());
+
+        Set<String> materialsPathSets = new HashSet<>((Collection<? extends String>) parseLinesToSet(file, s -> s.contains("material"), mapper, Set.class));
+
+        if (materialsPathSets.isEmpty()) {
+            throw new IOException("Invalid DMX. Regenerating the DMX file may resolve this issue");
         }
 
         return materialsPathSets;
@@ -239,6 +262,34 @@ public class ParticleLocatorController {
         }
 
         return gameinfoPathSets;
+    }
+
+    private <T> Collection<?> parseLinesToSet(File source, Predicate<String> stringFilterPredicate
+            , List<Function<String, String>> mappers, Class<T> collection) {
+        Path sourcePath = Path.of(source.toURI());
+        Collection<?> collectedResults = null;
+        try (Stream<String> lines = Files.lines(sourcePath)) {
+            Stream<String> processedLines =  lines
+                    .filter(stringFilterPredicate)
+                    .map(s -> {
+                        String result = s;
+                        for(Function<String, String> mapper : mappers) {
+                            result = mapper.apply(result);
+                        }
+                        return result;
+                    });
+                    if (collection.equals(List.class)) {
+                        collectedResults = processedLines.collect(Collectors.toList());
+                        return collectedResults;
+                    }
+                    if (collection.equals(Set.class)) {
+                        collectedResults = processedLines.collect(Collectors.toSet());
+                        return collectedResults;
+                    }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 
 }
