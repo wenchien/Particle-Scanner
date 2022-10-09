@@ -1,8 +1,10 @@
 import com.particlelocator.gui.GuiDriver;
+import com.particlelocator.gui.beans.ParticleManifest;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +16,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UnitTester {
+
+    @Test
+    public void testManifestGenerate() {
+        ParticleManifest pm = new ParticleManifest();
+        Set<String> particleManiList = new HashSet<>();
+        particleManiList.add("particles/seima.pcf");
+        particleManiList.add("particles/seima2.pcf");
+        particleManiList.add("particles/seima3.pcf");
+        particleManiList.add("particles/seima4.pcf");
+        pm.setParticleFileMap(particleManiList);
+        // System.out.println(pm);
+        try(OutputStream out = new FileOutputStream(new File("D:\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\csgo\\custom\\ze_fe8_sacred_stones\\maps\\test.txt"))) {
+            out.write(pm.toString().getBytes(StandardCharsets.UTF_8));
+        }catch(Exception ex) {
+
+        }
+    }
 
     @Test
     public void testParseVmt() throws IOException {

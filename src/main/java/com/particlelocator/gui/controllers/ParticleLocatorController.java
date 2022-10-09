@@ -1,5 +1,6 @@
 package com.particlelocator.gui.controllers;
 
+import com.particlelocator.gui.beans.ParticleManifest;
 import com.particlelocator.gui.util.FileBrowsingSupplier;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,16 +12,17 @@ import javafx.stage.FileChooser;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public class ParticleLocatorController {
 
     private FileBrowsingSupplier fbSupplier = FileBrowsingSupplier.getInstance();
@@ -99,6 +101,8 @@ public class ParticleLocatorController {
 
     // Convert binary DMX to Tex DMX
     // .pcf file by default is binary DMX  format
+
+    // Cleanup make it run only if all fields are filled in
     @FXML
     private void runTask() {
         Task<Void> task = new Task<>() {
@@ -106,11 +110,20 @@ public class ParticleLocatorController {
             public Void call() {
                 try {
                     int materialCount = pcfMaterialsList.size();
+                    String gameInfoText = gameInfoTextField.getText();
+                    String rootFolder = gameInfoText.substring(0, gameInfoText.lastIndexOf("\\"));
+                    String customPorjectFolderStr = customProjectFolderTextField.getText();
+
+                    if (generatePcfManifest.isSelected()) {
+                        generatePcfManifest(new File(customPorjectFolderStr + "\\particles"),new File(customPorjectFolderStr), mapVersionTextField.getText());
+                    }
+
+                    if(!autoMoveCheckbox.isSelected()) {
+                        return null;
+                    }
+
                     for (String materialPathStr : pcfMaterialsList) {
-                        if (gameInfoTextField.getText() != null && gameInfoTextField.getText() != "") {
-                            String gameInfoText = gameInfoTextField.getText();
-                            String rootFolder = gameInfoText.substring(0, gameInfoText.lastIndexOf("\\"));
-                            String customPorjectFolderStr = customProjectFolderTextField.getText();
+                        if (null != gameInfoTextField.getText() && "" != gameInfoTextField.getText()) {
                             // check if material already exists in the projectFolder path
                             if (new File(customPorjectFolderStr + materialPathStr).exists()) {
                                 // assuming vtfs already exists
@@ -237,6 +250,25 @@ public class ParticleLocatorController {
         }
 
         return materialsPathSets;
+    }
+
+    private void generatePcfManifest(File particlesDirectory, File customProjectFolder, String fullMapName) {
+        Set<String> particleFileSets = new HashSet<>();
+
+        for (File particleFile : particlesDirectory.listFiles()) {
+            String pcfPath = particleFile.getAbsolutePath();
+            particleFileSets.add(pcfPath.substring(pcfPath.indexOf("particles")));
+        }
+
+        if (!particleFileSets.isEmpty()) {
+            ParticleManifest pm = new ParticleManifest();
+            pm.setParticleFileMap(particleFileSets);
+            try(OutputStream out = new FileOutputStream(customProjectFolder.getAbsolutePath() + "maps\\" + fullMapName + "_particles.txt")) {
+                out.write(pm.toString().getBytes(StandardCharsets.UTF_8));
+            }catch(Exception ex) {
+
+            }
+        }
     }
 
 
