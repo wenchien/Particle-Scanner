@@ -1,7 +1,10 @@
 package com.particlelocator.gui.controllers;
 
+import com.google.gson.Gson;
+import com.particlelocator.gui.beans.Configuration;
 import com.particlelocator.gui.beans.ParticleManifest;
 import com.particlelocator.gui.util.FileBrowsingSupplier;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -22,7 +25,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "unchecked"})
 public class ParticleLocatorController {
 
     private FileBrowsingSupplier fbSupplier = FileBrowsingSupplier.getInstance();
@@ -31,7 +34,7 @@ public class ParticleLocatorController {
 
     private ObservableList<String> gameinfoPathList = FXCollections.observableArrayList();
 
-    private Path dmxConverter;
+    private final Path dmxConverter;
 
     @FXML
     private CheckBox autoMoveCheckbox;
@@ -81,6 +84,11 @@ public class ParticleLocatorController {
 
     @FXML
     private void initialize() {
+        // Check if config exists
+        if (null != Configuration.configMap &&!Configuration.configMap.isEmpty()) {
+            // Pre-populate stuff
+
+        }
         progressBar.setProgress(0);
         gameInfoListView.setItems(gameinfoPathList);
         materialListView.setItems(pcfMaterialsList);
@@ -99,10 +107,84 @@ public class ParticleLocatorController {
         });
     }
 
-    // Convert binary DMX to Tex DMX
-    // .pcf file by default is binary DMX  format
+    private void initFuncSaveConfig() {
+        saveToConfig.setOnAction(e -> {
+            Map<String, String> configToSave = new HashMap<>();
+            configToSave.put("CustomProject", Objects.requireNonNull(customProjectFolderTextField.getText()));
+            configToSave.put("GameInfoTxt", Objects.requireNonNull(gameInfoTextField.getText()));
+            configToSave.put("MapName", Objects.requireNonNull(mapVersionTextField.getText()));
+            configToSave.put("ParticleFile", Objects.requireNonNull(pcfTextField.getText()));
+            String jsonString = Configuration.jsonConfigReader.toJson(configToSave);
+            try {
+                System.out.println(Configuration.configFileLoc);
+                FileOutputStream fos = new FileOutputStream(new File(Configuration.configFileLoc));
+                fos.write(jsonString.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
 
-    // Cleanup make it run only if all fields are filled in
+        });
+    }
+
+    private void initFuncRunButton() {
+        runBtn.disableProperty().bind(
+                Bindings.isEmpty(customProjectFolderTextField.textProperty())
+                        .or(Bindings.isEmpty(gameInfoTextField.textProperty()))
+                        .or(Bindings.isEmpty(pcfTextField.textProperty()))
+                        .or(Bindings.isEmpty(mapVersionTextField.textProperty()))
+        );
+
+        runBtn.setOnAction(e -> {
+            runTask();
+        });
+    }
+
+    private void initFuncPcfBrowse() {
+        // LOGGER.info("Initializing Application Console menu");
+        pcfBrowse.setOnAction(e -> {
+            File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(pcfBrowse, pcfTextField, new FileChooser.ExtensionFilter("PCF Files", "*.pcf"));
+            if(null == selectedFile) {
+                return;
+            }
+            if (selectedFile.exists()) {
+                // Populate
+                pcfMaterialsList.clear();
+
+                try {
+                    int returnCode = executeDmxConverter(selectedFile);
+                    Set<String> materialsPathSets = parseDmxForMaterial(new File(selectedFile.getPath() + ".dmx"));
+                    pcfMaterialsList.addAll(materialsPathSets);
+                } catch (URISyntaxException ex) {
+                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+
+            }
+        });
+    }
+
+    private void initFuncGameInfoBrowse() {
+        // LOGGER.info("Initializing Application Console menu");
+        gameInfoBrowse.setOnAction(e -> {
+            File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(gameInfoBrowse, gameInfoTextField, new FileChooser.ExtensionFilter("TXT Files", "*.txt"));
+            if(null == selectedFile) {
+                return;
+            }
+            gameinfoPathList.clear();
+            gameinfoPathList.addAll(populateListOfGamePath(selectedFile));
+        });
+    }
+
+    private void initFuncCustomProjectFolderBrowse() {
+        // LOGGER.info("Initializing Application Console menu");
+        customProjectBrowse.setOnAction(e -> {
+            fbSupplier.directoryBrowsingConsumer(customProjectBrowse, customProjectFolderTextField);
+        });
+    }
+
     @FXML
     private void runTask() {
         Task<Void> task = new Task<>() {
@@ -170,55 +252,9 @@ public class ParticleLocatorController {
 
     private int executeDmxConverter(File sourceFile) throws URISyntaxException, IOException, InterruptedException {
         String commandLine = String.format("%s -i %s -ie binary -o %s -of tex", dmxConverter.toFile().getAbsolutePath(),
-                            "\"" + sourceFile.getAbsolutePath() + "\"", "\"converted.dmx\"");
+                "\"" + sourceFile.getAbsolutePath() + "\"", "\"" + sourceFile.getAbsolutePath() + ".dmx\"");
         Process process = Runtime.getRuntime().exec(commandLine);
         return process.waitFor();
-    }
-
-    private void initFuncPcfBrowse() {
-        // LOGGER.info("Initializing Application Console menu");
-        pcfBrowse.setOnAction(e -> {
-            File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(pcfBrowse, pcfTextField, new FileChooser.ExtensionFilter("PCF Files", "*.pcf"));
-            if(null == selectedFile) {
-                return;
-            }
-            if (selectedFile.exists()) {
-                // Populate
-                pcfMaterialsList.clear();
-
-                try {
-                    int returnCode = executeDmxConverter(selectedFile);
-                    Set<String> materialsPathSets = parseDmxForMaterial(new File(selectedFile.getPath() + ".dmx"));
-                    pcfMaterialsList.addAll(materialsPathSets);
-                } catch (URISyntaxException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-
-            }
-        });
-    }
-
-    private void initFuncGameInfoBrowse() {
-        // LOGGER.info("Initializing Application Console menu");
-        gameInfoBrowse.setOnAction(e -> {
-            File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(gameInfoBrowse, gameInfoTextField, new FileChooser.ExtensionFilter("TXT Files", "*.txt"));
-            if(null == selectedFile) {
-                return;
-            }
-            gameinfoPathList.clear();
-            gameinfoPathList.addAll(populateListOfGamePath(selectedFile));
-        });
-    }
-
-    private void initFuncCustomProjectFolderBrowse() {
-        // LOGGER.info("Initializing Application Console menu");
-        customProjectBrowse.setOnAction(e -> {
-            fbSupplier.directoryBrowsingConsumer(customProjectBrowse, customProjectFolderTextField);
-        });
     }
 
     private List<String> parseVmtForVtf(File file) throws IOException {

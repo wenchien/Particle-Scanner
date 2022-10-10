@@ -83,7 +83,7 @@
                         <CheckBox fx:id="autoMoveCheckbox" layoutX="171.0" layoutY="606.0" mnemonicParsing="false" scaleX="0.75" scaleY="0.75" text="Auto-move particle materials" />
                         <TextField fx:id="mapVersionTextField" layoutX="34.0" layoutY="208.0" prefHeight="40.0" prefWidth="255.0" />
                         <Label layoutX="435.0" layoutY="25.0" text="Search Paths:" />
-                        <Label layoutX="34.0" layoutY="180.0" text="Map Version:" />
+                        <Label layoutX="34.0" layoutY="180.0" text="Map Full Name:" />
                      </children>
                 </AnchorPane>
               </children>
