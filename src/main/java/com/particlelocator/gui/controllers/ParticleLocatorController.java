@@ -1,6 +1,8 @@
 package com.particlelocator.gui.controllers;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.particlelocator.gui.beans.ConfigKey;
 import com.particlelocator.gui.beans.Configuration;
 import com.particlelocator.gui.beans.ParticleManifest;
 import com.particlelocator.gui.util.FileBrowsingSupplier;
@@ -78,6 +80,12 @@ public class ParticleLocatorController {
     @FXML
     private TextField mapVersionTextField;
 
+    @FXML
+    private MenuItem openConfig;
+
+    @FXML
+    private MenuItem clearAllFields;
+
     public ParticleLocatorController() throws URISyntaxException {
         dmxConverter = Path.of(this.getClass().getResource("/dmxconvertutil/dmxconvert.exe").toURI());
     }
@@ -85,10 +93,12 @@ public class ParticleLocatorController {
     @FXML
     private void initialize() {
         // Check if config exists
-        if (null != Configuration.configMap &&!Configuration.configMap.isEmpty()) {
+        if (null != Configuration.configMap) {
             // Pre-populate stuff
-
+            Map<String, String> localConfigMap = Configuration.configMap;
+            populateTextFieldsByConfig(localConfigMap);
         }
+
         progressBar.setProgress(0);
         gameInfoListView.setItems(gameinfoPathList);
         materialListView.setItems(pcfMaterialsList);
@@ -107,13 +117,21 @@ public class ParticleLocatorController {
         });
     }
 
+    private void initFuncLoadConfig() {
+        openConfig.setOnAction(e -> {
+            File selectedFile = fbSupplier.fileBrowsingConsumerFileReturn(openConfig, new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+            Map<String, String> localConfigMap = Configuration.jsonConfigReader.fromJson(selectedFile.getAbsolutePath(), new TypeToken<Map<String, String>>() {}.getType());
+            populateTextFieldsByConfig(localConfigMap);
+        });
+    }
+
     private void initFuncSaveConfig() {
         saveToConfig.setOnAction(e -> {
             Map<String, String> configToSave = new HashMap<>();
-            configToSave.put("CustomProject", Objects.requireNonNull(customProjectFolderTextField.getText()));
-            configToSave.put("GameInfoTxt", Objects.requireNonNull(gameInfoTextField.getText()));
-            configToSave.put("MapName", Objects.requireNonNull(mapVersionTextField.getText()));
-            configToSave.put("ParticleFile", Objects.requireNonNull(pcfTextField.getText()));
+            configToSave.put(ConfigKey.CUSTOMFOLDER.toString(), Objects.requireNonNull(customProjectFolderTextField.getText()));
+            configToSave.put(ConfigKey.GAMEINFO.toString(), Objects.requireNonNull(gameInfoTextField.getText()));
+            configToSave.put(ConfigKey.MAPNAME.toString(), Objects.requireNonNull(mapVersionTextField.getText()));
+            configToSave.put(ConfigKey.PARTICLEFILE.toString(), Objects.requireNonNull(pcfTextField.getText()));
             String jsonString = Configuration.jsonConfigReader.toJson(configToSave);
             try {
                 System.out.println(Configuration.configFileLoc);
@@ -121,6 +139,8 @@ public class ParticleLocatorController {
                 fos.write(jsonString.getBytes(StandardCharsets.UTF_8));
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } finally {
+
             }
 
         });
@@ -330,6 +350,13 @@ public class ParticleLocatorController {
         }
 
         return gameinfoPathSets;
+    }
+
+    private <T extends String> void populateTextFieldsByConfig(Map<T, T> configMap) {
+        customProjectFolderTextField.setText(configMap.get(ConfigKey.CUSTOMFOLDER.toString()));
+        gameInfoTextField.setText(configMap.get(ConfigKey.GAMEINFO.toString()));
+        mapVersionTextField.setText(configMap.get(ConfigKey.MAPNAME.toString()));
+        pcfTextField.setText(configMap.get(ConfigKey.PARTICLEFILE.toString()));
     }
 
     private <T> Collection<?> parseLinesToSet(File source, Predicate<String> stringFilterPredicate

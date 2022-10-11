@@ -26,7 +26,10 @@ public class Configuration {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        System.out.println(configFileLoc);
         if (new File(configFileLoc).exists()) {
+            System.out.println(configFileLoc);
+
             configMap = jsonConfigReader.fromJson(configFileLoc, new TypeToken<Map<String, String>>() {}.getType());
         }
     }

@@ -57,7 +57,9 @@
                   <menus>
                     <Menu mnemonicParsing="false" text="File">
                       <items>
-                        <MenuItem fx:id="saveToConfig" mnemonicParsing="false" text="Save To Config" />
+                          <MenuItem fx:id="openConfig" mnemonicParsing="false" text="Load config" />
+                          <MenuItem fx:id="saveToConfig" mnemonicParsing="false" text="Save To Config" />
+                          <MenuItem fx:id="clearAllFields" mnemonicParsing="false" text="Clear all" />
                       </items>
                     </Menu>
                   </menus>

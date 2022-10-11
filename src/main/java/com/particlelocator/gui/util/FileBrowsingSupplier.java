@@ -2,6 +2,7 @@ package com.particlelocator.gui.util;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -41,6 +42,13 @@ public class FileBrowsingSupplier {
         File selectedFile = fileChooser.showOpenDialog((Stage)btn.getScene().getWindow());
         //LOGGER.info(selectedFile != null && selectedFile.exists() ? "Selected file: " + selectedFile.getAbsolutePath() : "undefined");
         txtField.setText(selectedFile != null && selectedFile.exists() ? selectedFile.getAbsolutePath() : "undefined");
+        return selectedFile;
+    }
+
+    public File fileBrowsingConsumerFileReturn(MenuItem menuItem, @Nullable FileChooser.ExtensionFilter... filters) {
+        FileChooser fileChooser = new FileChooser();
+        Arrays.stream(filters).forEach(f -> fileChooser.getExtensionFilters().add(f));
+        File selectedFile = fileChooser.showOpenDialog(menuItem.getParentPopup().getOwnerWindow());
         return selectedFile;
     }
 
