@@ -8,6 +8,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+// Loads configuration from json file
 public class Configuration {
 
     public static final Gson jsonConfigReader = new GsonBuilder().setPrettyPrinting().create();

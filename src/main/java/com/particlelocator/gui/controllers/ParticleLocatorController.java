@@ -87,7 +87,7 @@ public class ParticleLocatorController {
     private MenuItem clearAllFields;
 
     public ParticleLocatorController() throws URISyntaxException {
-        dmxConverter = Path.of(this.getClass().getResource("/dmxconvertutil/dmxconvert.exe").toURI());
+        dmxConverter = Path.of(this.getClass().getResource(String.valueOf(ConfigKey.DMXCONVERTER)).toURI());
     }
 
     @FXML

@@ -1,5 +1,6 @@
 package com.particlelocator.gui;
 
+import com.particlelocator.gui.beans.ConfigKey;
 import com.particlelocator.gui.controllers.ParticleLocatorController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -13,12 +14,12 @@ import java.net.URISyntaxException;
 public class GuiDriver extends Application {
     @Override
     public void start(Stage stage) throws IOException, URISyntaxException {
-        FXMLLoader fxmlLoader = new FXMLLoader(GuiDriver.class.getResource("particle-locator-gui.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(GuiDriver.class.getResource(String.valueOf(ConfigKey.PARTICLECONTROLLER)));
         fxmlLoader.setController(new ParticleLocatorController());
 
         Stage pcfStage = fxmlLoader.load();
-        pcfStage.getIcons().add(new Image(GuiDriver.class.getResourceAsStream("icons/icon.jpg")));
-        pcfStage.getScene().getStylesheets().add(GuiDriver.class.getResource("css/dark-theme.css").toString());
+        pcfStage.getIcons().add(new Image(GuiDriver.class.getResourceAsStream(String.valueOf(ConfigKey.ICONNAME))));
+        pcfStage.getScene().getStylesheets().add(GuiDriver.class.getResource(String.valueOf(ConfigKey.DARKTHEME)).toString());
         pcfStage.show();
     }
 
